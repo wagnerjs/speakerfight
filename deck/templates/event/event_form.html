@@ -18,6 +18,17 @@
 {% endblock head %}
 
 {% block content %}
+  <ol class="breadcrumb">
+    <li><a href="{% url 'index_page' %}">{% trans "Home" %}</a></li>
+    <li><a href="{% url 'list_events' %}">{% trans "Events" %}</a></li>
+    {% if form.instance.pk %}
+    <li><a href="{% url 'view_event' slug=event.slug %}">{{ event.title }}</a></li>
+    <li class="active">Update</li>
+    {% else %}
+    <li class="active">New Event</li>
+    {% endif %}
+  </ol>
+
   <div class="row header">
     <h2>
       {% if form.instance.pk %}
@@ -30,8 +41,15 @@
   <div class="row form-wrapper">
     <!-- left column -->
     <div class="column">
-      <form method="POST">
+      <form method="POST" novalidate>
         {% csrf_token %}
+        {% if form.errors.description %}
+          <div class="alert alert-danger alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <strong>{% trans 'Description' %}</strong>
+              {{ form.errors.description }}
+          </div>
+        {% endif %}
         {% bootstrap_form form layout='inline' %}
 
         {% buttons %}
@@ -61,6 +79,8 @@
 {% block scripts %}
   <!-- scripts for this page -->
   <script src="{{ STATIC_URL }}js/libs/jquery.uniform.min.js"></script>
+  <script src="{{ STATIC_URL }}js/libs/tinymce/tinymce.min.js"></script>
+  <script src="{{ STATIC_URL }}js/forms.js"></script>
 
   <!-- call this page plugins -->
   <script type="text/javascript">

@@ -19,7 +19,6 @@ env.virtualenv_dir = '/home/virtualenv'
 def _run(command, pip='python'):
     run('{venv}/bin/{target} {command}'.format(
         venv=env.virtualenv_dir,
-        project_name=env.project_name,
         command=command,
         target=pip))
 
@@ -42,6 +41,9 @@ def _update_app():
 
         print yellow('Collecting the static files')
         _run('manage.py collectstatic --noinput --verbosity=0')
+
+        print yellow('Compiling the strings')
+        _run('manage.py compilemessages')
 
         print green('App succefully updated')
 

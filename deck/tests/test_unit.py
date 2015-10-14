@@ -1,8 +1,9 @@
 from django.test import TestCase
 from django.db.models import (CharField, TextField,
                               BooleanField, ForeignKey,
-                              SmallIntegerField, ManyToManyField)
+                              SmallIntegerField)
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext as _
 
 from deck.models import Event, Proposal, Vote, Jury
 
@@ -10,13 +11,22 @@ EVENT_DATA = {
     'title': 'RuPy',
     'slug': 'rupy',
     'description': 'A really good event.',
-    'author_id': 1
+    'author_id': 1,
+    'is_published': False,
+    'slots': 30
 }
 
 PROPOSAL_DATA = {
     'title': 'Python For Zombies',
     'slug': 'python-for-zombies',
     'description': 'Brain...',
+    'author_id': 1
+}
+
+ANOTHER_PROPOSAL_DATA = {
+    'title': 'A Python 3 Metaprogramming Tutorial',
+    'slug': 'python-3-metaprogramming',
+    'description': 'An advanced tutorial on Python 3 and Metaprogramming',
     'author_id': 1
 }
 
@@ -28,10 +38,10 @@ class EventModelIntegrityTest(TestCase):
         }
 
     def test_assert_event_should_have_a_verbose_name(self):
-        self.assertEquals(u'Event', Event._meta.verbose_name)
+        self.assertEquals(_('Event'), Event._meta.verbose_name)
 
     def test_assert_event_should_have_a_verbose_name_plural(self):
-        self.assertEquals(u'Events', Event._meta.verbose_name_plural)
+        self.assertEquals(_('Events'), Event._meta.verbose_name_plural)
 
     def test_assert_event_should_have_a_title(self):
         self.assertIn('title', Event._meta.get_all_field_names())
@@ -56,8 +66,8 @@ class EventModelIntegrityTest(TestCase):
         self.assertEquals(False, self.fields['description'].null)
         self.assertEquals(False, self.fields['description'].blank)
 
-    def test_assert_event_description_should_have_at_most_400_characters(self):
-        self.assertEquals(400, self.fields['description'].max_length)
+    def test_assert_event_description_should_have_at_most_10000_characters(self):
+        self.assertEquals(10000, self.fields['description'].max_length)
 
     def test_assert_event_should_allow_public_voting(self):
         self.assertIn('allow_public_voting', Event._meta.get_all_field_names())
@@ -90,8 +100,8 @@ class EventModelIntegrityTest(TestCase):
     def test_assert_event_is_published_should_be_a_BooleanField(self):
         self.assertIsInstance(self.fields['is_published'], BooleanField)
 
-    def test_assert_event_is_published_should_be_False_as_default(self):
-        self.assertEquals(False, self.fields['is_published'].default)
+    def test_assert_event_is_published_should_be_True_as_default(self):
+        self.assertEquals(True, self.fields['is_published'].default)
 
     def test_assert_event_should_have_a_jury(self):
         self.assertIn('jury', Event._meta.get_all_field_names())
@@ -140,10 +150,10 @@ class ProposalModelIntegrityTest(TestCase):
         }
 
     def test_assert_proposal_should_have_a_verbose_name(self):
-        self.assertEquals(u'Proposal', Proposal._meta.verbose_name)
+        self.assertEquals(_('Proposal'), Proposal._meta.verbose_name)
 
     def test_assert_proposal_should_have_a_verbose_name_plural(self):
-        self.assertEquals(u'Proposals', Proposal._meta.verbose_name_plural)
+        self.assertEquals(_('Proposals'), Proposal._meta.verbose_name_plural)
 
     def test_assert_proposal_should_have_a_title(self):
         self.assertIn('title', Proposal._meta.get_all_field_names())
@@ -168,8 +178,8 @@ class ProposalModelIntegrityTest(TestCase):
         self.assertEquals(False, self.fields['description'].null)
         self.assertEquals(False, self.fields['description'].blank)
 
-    def test_assert_proposal_description_should_have_400_characters(self):
-        self.assertEquals(400, self.fields['description'].max_length)
+    def test_assert_proposal_description_should_have_10000_characters(self):
+        self.assertEquals(10000, self.fields['description'].max_length)
 
     def test_assert_proposal_should_have_a_author(self):
         self.assertIn('author', Proposal._meta.get_all_field_names())
@@ -206,8 +216,14 @@ class ProposalModelIntegrityTest(TestCase):
     def test_assert_proposal_is_published_should_be_a_BooleanField(self):
         self.assertIsInstance(self.fields['is_published'], BooleanField)
 
-    def test_assert_proposal_is_published_should_be_False_as_default(self):
-        self.assertEquals(False, self.fields['is_published'].default)
+    def test_assert_proposal_is_published_should_be_True_as_default(self):
+        self.assertEquals(True, self.fields['is_published'].default)
+
+    def test_assert_proposal_is_approved_should_be_a_BooleanField(self):
+        self.assertIsInstance(self.fields['is_approved'], BooleanField)
+
+    def test_assert_proposal_is_approved_should_be_False_as_default(self):
+        self.assertEquals(False, self.fields['is_approved'].default)
 
 
 class ProposalObjectTest(TestCase):
@@ -233,7 +249,12 @@ class ProposalObjectTest(TestCase):
         self.assertEquals(1, self.proposal.author_id)
 
     def test_assert_proposal_rate(self):
-        self.assertEquals(0, self.proposal.rate)
+        self.assertEquals(0, self.proposal.get_rate)
+
+    def test_get_absolute_url(self):
+        self.proposal.event = self.event
+        self.assertEquals('/events/rupy/#python-for-zombies',
+                          self.proposal.get_absolute_url())
 
     def test_assert_user_cannot_vote_multiple_times(self):
         self.event.save()
@@ -243,10 +264,29 @@ class ProposalObjectTest(TestCase):
         self.vote.proposal = self.proposal
         self.vote.save()
 
-        self.assertTrue(self.proposal.user_already_votted(self.user))
+        self.assertTrue(self.proposal.user_already_voted(self.user))
 
     def test_assert_proposal_is_published(self):
-        self.assertEquals(False, self.proposal.is_published)
+        self.assertEquals(True, self.proposal.is_published)
+
+    def test_assert_proposal_approve(self):
+        self.event.save()
+        self.proposal.event = self.event
+        self.proposal.save()
+
+        self.assertEquals(False, self.proposal.is_approved)
+        self.proposal.approve()
+        self.assertEquals(True, self.proposal.is_approved)
+
+    def test_assert_proposal_disapprove(self):
+        self.event.save()
+        self.proposal.event = self.event
+        self.proposal.is_approved = True
+        self.proposal.save()
+
+        self.assertEquals(True, self.proposal.is_approved)
+        self.proposal.disapprove()
+        self.assertEquals(False, self.proposal.is_approved)
 
 
 class VoteModelIntegrityTest(TestCase):
@@ -256,10 +296,10 @@ class VoteModelIntegrityTest(TestCase):
         }
 
     def test_assert_vote_should_have_a_verbose_name(self):
-        self.assertEquals(u'Vote', Vote._meta.verbose_name)
+        self.assertEquals(_('Vote'), Vote._meta.verbose_name)
 
     def test_assert_vote_should_have_a_verbose_name_plural(self):
-        self.assertEquals(u'Votes', Vote._meta.verbose_name_plural)
+        self.assertEquals(_('Votes'), Vote._meta.verbose_name_plural)
 
     def test_assert_vote_should_have_a_unique_together_constraint(self):
         self.assertEquals((('proposal', 'user'),), Vote._meta.unique_together)

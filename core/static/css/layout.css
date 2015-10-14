@@ -219,7 +219,7 @@ input.search {
 /* Sidebar */
 #sidebar-nav {
   position: absolute;
-  width: 180px;
+  width: 250px;
   float: left;
   margin: 0em;
   padding-top: 5.8em; }
@@ -355,7 +355,7 @@ input.search {
   overflow: hidden;
   position: relative;
   background: #fff;
-  margin-left: 177px;
+  margin-left: 247px;
   border-left: 1px solid #dae3e9;
   border-bottom: 1px solid #dae3e9;
   box-shadow: -3px 3px 3px -2px #f1f1f3;
@@ -594,4 +594,78 @@ body.modal-open,
   padding: 8px;
   vertical-align: top;
   border-top: 1px solid #edf2f7;
+}
+
+
+/* ==========================================================================
+   Overriding layout.css styles
+   ========================================================================== */
+
+#pad-wrapper {
+  margin-top: 40px;
+}
+
+.content {
+  margin-bottom: 50px;
+  min-height: 385px;
+}
+
+
+/* ==========================================================================
+   Custom style
+   ========================================================================== */
+
+html {
+  background: #2c3742;
+}
+
+#footer {
+  background: #2c3742;
+  /*box-shadow: inset rgba(255, 255, 255, 0.3) 0 1px 0, inset rgba(0, 0, 0, 0.22) 0 -1px 0, rgba(0, 0, 0, 0.14) 0 1px 2px;*/
+  width: 100%;
+  padding: 50px 0 10px;
+  color: #FFF;
+}
+
+#footer .row {
+  /* Fixing an issue with horizontal scrolling. */
+  margin: 0;
+}
+
+#footer .footer-icons {
+  font-size: 38px;
+}
+
+#footer .footer-icons a:hover {
+  text-decoration: none;
+}
+
+.event-item {
+  /* nothing. */
+}
+
+.event-item .event-actions {
+  font-size: 14px;
+}
+
+.event-item .event-title {
+  font-size: 24px;
+}
+
+.event-item .event-description {
+  font-size: 16px;
+}
+
+.event-item .event-metadata,
+.proposal-item .proposal-metadata {
+  color: #999;
+}
+
+#event-detail .event-title {
+  font-size: 30px;
+}
+
+.proposal-item .author-photo {
+  width: 40px;
+  height: 40px;
 }

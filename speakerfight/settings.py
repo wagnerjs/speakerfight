@@ -39,6 +39,7 @@ TEMPLATE_DIRS = [
 STATICFILES_DIRS = []
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+DEFAULT_FROM_EMAIL = NO_REPLY_EMAIL = 'noreply@speakerfight.com'
 
 ALLOWED_HOSTS = [
     "speakerfight.com",
@@ -71,12 +72,14 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'datetimewidget',
     'raven.contrib.django.raven_compat',
+    'rest_framework',
 ]
 
 LOCAL_APPS = [
     'deck',
     'core',
     'jury',
+    'api',
 ]
 
 INSTALLED_APPS = LOCAL_APPS + THIRD_PARTY_APPS + DEFAULT_APPS
@@ -85,6 +88,7 @@ ROOT_URLCONF = 'speakerfight.urls'
 
 WSGI_APPLICATION = 'speakerfight.wsgi.application'
 
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -101,7 +105,7 @@ DATABASES = {
 
 TIME_ZONE = 'America/Sao_Paulo'
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'en-US'
 
 LANGUAGES = (
     ('en', 'English'),
@@ -169,6 +173,8 @@ SOCIALACCOUNT_PROVIDERS = {
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/events/'
 ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_QUERY_EMAIL = True
